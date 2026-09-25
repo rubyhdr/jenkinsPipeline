@@ -1,7 +1,7 @@
 # Shelf: Library System with a Jenkins DevOps Pipeline
 
 Shelf is a small library management system (Flask + Postgres). It is delivered by a 7-stage Jenkins pipeline:
-**Build → Test → Code Quality → Security → Deploy → Release → Monitoring**.
+**Build, Test, Code Quality, Security, Deploy, Release, Monitoring**.
 Everything (Jenkins, SonarQube, registry, staging, production and monitoring) runs locally with Docker Compose,
 and all of it is configured as code in this repository.
 
