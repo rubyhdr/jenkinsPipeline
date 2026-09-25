@@ -47,23 +47,6 @@ docker compose -f infra/docker-compose.tools.yml up -d --build
   # PIPELINE_REPO_URL=file:///workspace-src
   ```
 
-### Pushing release tags to GitHub (optional)
-
-On every successful release, the Release stage creates an annotated tag `v<version>` (for example `v1.0.14`).
-To have Jenkins push that tag to GitHub:
-
-1. Create a GitHub **fine-grained personal access token** limited to `rubyhdr/jenkinsPipeline`, with
-   *Contents: Read and write* permission.
-2. Add it to `infra/.env` (never commit it):
-   ```ini
-   GITHUB_USER=rubyhdr
-   GITHUB_TOKEN=github_pat_...
-   ```
-3. Run `docker compose -f infra/docker-compose.tools.yml up -d`. Jenkins stores the token as the `github-push`
-   credential and masks it in logs.
-
-Without a token the tag is still created, but only in the Jenkins build workspace. The build log says so.
-
 ### Where everything lives
 
 | Service | URL | Login |
@@ -114,35 +97,4 @@ Alerts are routed by Alertmanager to the webhook receiver (a Slack example is in
 ```bash
 docker exec shelf-jenkins python3 /var/jenkins_home/workspace/shelf-pipeline/scripts/simulate_incident.py outage
 docker exec shelf-jenkins python3 /var/jenkins_home/workspace/shelf-pipeline/scripts/simulate_incident.py errors
-```
-
-## Running the app locally without Docker
-
-```bash
-python -m venv .venv && . .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -r requirements-dev.txt
-flask --app wsgi init-db && flask --app wsgi seed
-flask --app wsgi run --port 5050                  # http://127.0.0.1:5050
-pytest --cov=app                                  # 114 tests
-```
-
-## Repository layout
-
-```
-app/                Flask app: models, services (business rules), api/ (JSON), web/ (UI), templates, static
-tests/              unit/, integration/, e2e/ (Selenium)
-Dockerfile          multi-stage, non-root, HEALTHCHECK
-Jenkinsfile         the pipeline
-infra/              tools, staging, production and monitoring Compose files; Jenkins CasC; SonarQube bootstrap
-scripts/            deploy/rollback, smoke test, quality gate, security summary, monitoring checks, incident simulation
-docs/               security findings, report draft
-```
-
-## Stopping and cleaning up
-
-```bash
-docker compose -p shelf-monitoring -f infra/docker-compose.monitoring.yml down
-docker compose -p shelf-production -f infra/docker-compose.production.yml down
-docker compose -p shelf-staging -f infra/docker-compose.staging.yml down
-docker compose -f infra/docker-compose.tools.yml down        # add -v to delete all data volumes
 ```
