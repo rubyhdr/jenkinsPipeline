@@ -345,7 +345,7 @@ EOF
     success {
       echo """
       ✅ Shelf v${env.VERSION} released
-         Production : http://localhost:5000   Staging : http://localhost:5001
+         Production : http://localhost:8000   Staging : http://localhost:5001
          Grafana    : http://localhost:3000   Prometheus : http://localhost:9090
          Alerts     : http://localhost:9093   On-call feed : http://localhost:5055
          SonarQube  : http://localhost:9000/dashboard?id=shelf

@@ -27,7 +27,7 @@ flowchart LR
   J --> B
   B -- push --> REG[(Registry :5005)]
   D --> STG[Staging :5001]
-  R --> PRD[Production :5000]
+  R --> PRD[Production :8000]
   PRD -- /metrics --> PROM[Prometheus :9090] --> AM[Alertmanager :9093] --> HOOK[On-call feed :5055]
   PROM --> GRAF[Grafana :3000]
 ```
@@ -61,7 +61,7 @@ With a token set, the Release stage also pushes the `v<version>` git tag to GitH
 
 | Service | URL | Login |
 |---|---|---|
-| Shelf production | http://localhost:5000 | `member@shelf.local` / `Member1234`, `librarian@shelf.local` / `Librarian123` |
+| Shelf production | http://localhost:8000 | `member@shelf.local` / `Member1234`, `librarian@shelf.local` / `Librarian123` |
 | Shelf staging | http://localhost:5001 | same demo accounts |
 | Jenkins | http://localhost:8080 | admin / admin |
 | SonarQube | http://localhost:9000 | admin / `Shelf-Sonar-Admin-2026!` |
@@ -115,7 +115,7 @@ docker exec shelf-jenkins python3 /var/jenkins_home/workspace/shelf-pipeline/scr
 python -m venv .venv && . .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements-dev.txt
 flask --app wsgi init-db && flask --app wsgi seed
-flask --app wsgi run                              # http://127.0.0.1:5000
+flask --app wsgi run --port 5050                  # http://127.0.0.1:5050
 pytest --cov=app                                  # 108 tests
 ```
 

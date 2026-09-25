@@ -1,4 +1,5 @@
-# Accepted image vulnerabilities. Each entry must be justified in docs/SECURITY_FINDINGS.md
-# and reviewed when the base image is updated.
+# Accepted image vulnerabilities for the security gate (trivy image --ignorefile .trivyignore).
+# Each entry must be justified in docs/SECURITY_FINDINGS.md and reviewed when the base image changes.
+# Currently empty: every fixable HIGH/CRITICAL finding has been remediated.
 #
-# Format: one CVE ID per line, with a comment explaining why it is accepted.
+# IaC exceptions are made inline where they apply (see `# trivy:ignore:` comments in infra/*/Dockerfile).
