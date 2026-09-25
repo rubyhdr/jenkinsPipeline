@@ -1,13 +1,14 @@
 # SIT223/753 HD Task: Answer Sheet (draft)
 
-> Copy each section into the provided Word template, replace the `TODO` items, and export to PDF.
+> Copy each section into the provided Word template and export to PDF.
 > Screenshots referenced below are in `docs/screenshots/`.
 
 ## A link to the demo video
-TODO: paste video link (10 minutes or less). A suggested running order is at the end of this file.
+Add the video link here once it is uploaded (10 minutes or less). A suggested running order is at the end of this file.
 
 ## Link to the GitHub repository
-TODO: `https://github.com/<your-account>/shelf-devops-pipeline`
+https://github.com/rubyhdr/jenkinsPipeline (branch `main`, Jenkinsfile at the repository root)
+
 (Give both the **marker** and the **Unit Chair** read access, or make the repository public.)
 
 ## Number of stages implemented

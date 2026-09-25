@@ -14,7 +14,7 @@ services:
     environment:
       JENKINS_ADMIN_ID: ${JENKINS_ADMIN_ID:-admin}
       JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD:-admin}
-      PIPELINE_REPO_URL: ${PIPELINE_REPO_URL:-file:///workspace-src}
+      PIPELINE_REPO_URL: ${PIPELINE_REPO_URL:-https://github.com/rubyhdr/jenkinsPipeline.git}
       PIPELINE_REPO_CREDENTIALS: ${PIPELINE_REPO_CREDENTIALS:-}
       PIPELINE_BRANCH: ${PIPELINE_BRANCH:-*/main}
       STAGING_SECRET_KEY: ${STAGING_SECRET_KEY:-staging-secret-change-me}
@@ -27,7 +27,7 @@ services:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - sonar_secrets:/var/sonar:ro
-      # Local checkout, used as the pipeline's Git remote until PIPELINE_REPO_URL points at GitHub.
+      # Local checkout, used only when PIPELINE_REPO_URL=file:///workspace-src (build uncommitted work).
       - ..:/workspace-src:ro
     networks: [devops-net]
 

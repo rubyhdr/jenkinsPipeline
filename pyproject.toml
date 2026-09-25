@@ -9,6 +9,9 @@ description = "Shelf: a small library management system used to demonstrate a Je
 readme = "README.md"
 requires-python = ">=3.11"
 
+[project.urls]
+Repository = "https://github.com/rubyhdr/jenkinsPipeline"
+
 [tool.setuptools.packages.find]
 include = ["app*"]
 namespaces = true

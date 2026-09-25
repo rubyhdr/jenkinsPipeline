@@ -68,7 +68,7 @@ jobs:
             scm {
               git {
                 remote {
-                  url('${PIPELINE_REPO_URL:-file:///workspace-src}')
+                  url('${PIPELINE_REPO_URL:-https://github.com/rubyhdr/jenkinsPipeline.git}')
                   credentials('${PIPELINE_REPO_CREDENTIALS:-}')
                 }
                 branch('${PIPELINE_BRANCH:-*/main}')

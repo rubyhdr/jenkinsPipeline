@@ -5,6 +5,8 @@ Shelf is a small library management system (Flask + Postgres). It is delivered b
 Everything (Jenkins, SonarQube, registry, staging, production and monitoring) runs locally with Docker Compose,
 and all of it is configured as code in this repository.
 
+**Repository:** https://github.com/rubyhdr/jenkinsPipeline (branch `main`)
+
 | | |
 |---|---|
 | **App** | Browse and search the catalogue, borrow, return, renew, reserve, librarian dashboard, REST API with JWT |
@@ -14,48 +16,53 @@ and all of it is configured as code in this repository.
 | **Security** | Bandit (SAST), pip-audit (dependencies), Trivy (image CVEs + Dockerfile/Compose misconfigurations) |
 | **Ops** | Staging and production via Compose, automatic rollback, Prometheus, Alertmanager, Grafana |
 
-## Architecture
-
-```mermaid
-flowchart LR
-  dev[Developer<br/>git push] --> git[(Git repo)]
-  git -- poll every 2 min --> J[Jenkins]
-  subgraph Pipeline
-    direction LR
-    B[Build<br/>wheel + image] --> T[Test<br/>unit ∥ integration<br/>coverage gate] --> Q[Code Quality<br/>flake8 + SonarQube gate] --> S[Security<br/>Bandit ∥ pip-audit ∥ Trivy] --> D[Deploy staging<br/>smoke + Selenium E2E<br/>auto-rollback] --> R[Release production<br/>prod tag + git tag<br/>auto-rollback] --> M[Monitoring<br/>Prometheus checks<br/>Grafana annotation]
-  end
-  J --> B
-  B -- push --> REG[(Registry :5005)]
-  D --> STG[Staging :5001]
-  R --> PRD[Production :8000]
-  PRD -- /metrics --> PROM[Prometheus :9091] --> AM[Alertmanager :9093] --> HOOK[On-call feed :5055]
-  PROM --> GRAF[Grafana :3000]
-```
-
 ## Quick start (demo)
 
 Prerequisites: Docker Desktop (about 6 GB of RAM for Docker) and Git.
 
 ```bash
-git clone <this-repo-url> shelf && cd shelf
+git clone https://github.com/rubyhdr/jenkinsPipeline.git
+cd jenkinsPipeline
 
 # 1. Start the CI/CD tooling (the first build takes a few minutes)
 docker compose -f infra/docker-compose.tools.yml up -d --build
 
 # 2. Open Jenkins at http://localhost:8080 (admin / admin)
 #    The "shelf-pipeline" job is created automatically by Configuration-as-Code.
-#    It polls the repo every 2 minutes, or click "Build with Parameters" → Build.
+#    It polls GitHub every 2 minutes, or click "Build with Parameters" → Build.
 ```
 
-By default Jenkins builds the local checkout, which is mounted read-only at `/workspace-src`. To build from GitHub instead:
+### How Jenkins gets the code
 
-```bash
-PIPELINE_REPO_URL=https://github.com/<you>/<repo>.git \
-GITHUB_USER=<you> GITHUB_TOKEN=<token-with-repo-scope> \
-docker compose -f infra/docker-compose.tools.yml up -d
-```
+- The job clones **https://github.com/rubyhdr/jenkinsPipeline.git**, branch `main`, and runs its `Jenkinsfile`.
+  The repository is public, so no credentials are needed to clone it.
+- It polls GitHub every 2 minutes, so **every `git push` to `main` starts a build automatically**.
+- You can override the source in `infra/.env`, which is git-ignored and read by Docker Compose. After editing it,
+  run `docker compose -f infra/docker-compose.tools.yml up -d`:
 
-With a token set, the Release stage also pushes the `v<version>` git tag to GitHub.
+  ```ini
+  PIPELINE_REPO_URL=https://github.com/rubyhdr/jenkinsPipeline.git
+  PIPELINE_BRANCH=*/main
+  # Build uncommitted local work instead (the checkout is mounted read-only in Jenkins):
+  # PIPELINE_REPO_URL=file:///workspace-src
+  ```
+
+### Pushing release tags to GitHub (optional)
+
+On every successful release, the Release stage creates an annotated tag `v<version>` (for example `v1.0.14`).
+To have Jenkins push that tag to GitHub:
+
+1. Create a GitHub **fine-grained personal access token** limited to `rubyhdr/jenkinsPipeline`, with
+   *Contents: Read and write* permission.
+2. Add it to `infra/.env` (never commit it):
+   ```ini
+   GITHUB_USER=rubyhdr
+   GITHUB_TOKEN=github_pat_...
+   ```
+3. Run `docker compose -f infra/docker-compose.tools.yml up -d`. Jenkins stores the token as the `github-push`
+   credential and masks it in logs.
+
+Without a token the tag is still created, but only in the Jenkins build workspace. The build log says so.
 
 ### Where everything lives
 
@@ -116,7 +123,7 @@ python -m venv .venv && . .venv/bin/activate      # Windows: .venv\Scripts\activ
 pip install -r requirements-dev.txt
 flask --app wsgi init-db && flask --app wsgi seed
 flask --app wsgi run --port 5050                  # http://127.0.0.1:5050
-pytest --cov=app                                  # 108 tests
+pytest --cov=app                                  # 114 tests
 ```
 
 ## Repository layout
