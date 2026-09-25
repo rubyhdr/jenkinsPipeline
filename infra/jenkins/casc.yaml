@@ -55,6 +55,13 @@ jobs:
         description('CI/CD pipeline for the Shelf library system. Defined in the repository Jenkinsfile.')
         logRotator { numToKeep(30) }
         properties { disableConcurrentBuilds() }
+        // Mirrors the Jenkinsfile parameters so they exist before the first run and survive restarts.
+        parameters {
+          booleanParam('AUTO_APPROVE_RELEASE', true, 'Promote to production without waiting for manual approval')
+          booleanParam('RUN_E2E', true, 'Run Selenium browser tests against staging')
+          booleanParam('SIMULATE_INCIDENT', false, 'After release, stop production briefly and verify the alert fires and resolves')
+          booleanParam('SIMULATE_BAD_DEPLOY', false, 'Make the staging smoke test fail to demonstrate automatic rollback')
+        }
         triggers { pollSCM { scmpoll_spec('H/2 * * * *') } }
         definition {
           cpsScm {
