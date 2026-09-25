@@ -35,9 +35,12 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY --from=builder /wheels /wheels
-RUN pip install --no-cache-dir --upgrade pip \
- && pip install --no-cache-dir /wheels/* \
- && rm -rf /wheels
+# pip is only needed to install the wheels. Removing it (and ensurepip's bundled copy) drops
+# its vendored msgpack/pkg_resources, which Trivy flagged (GHSA-6v7p-g79w-8964, CVE-2025-47273).
+RUN pip install --no-cache-dir /wheels/* \
+ && rm -rf /wheels \
+ && pip uninstall -y pip \
+ && rm -rf /usr/local/lib/python3.12/ensurepip
 
 # Code stays root-owned (read-only for the app user); only the working dir is writable
 # because gunicorn keeps its control socket there.
