@@ -9,6 +9,7 @@ set -euo pipefail
 ENV_NAME="${1:?environment required}"
 NEW_IMAGE="${2:?image required}"
 EXPECTED_VERSION="${3:?expected version required}"
+: "${SECRET_KEY:?SECRET_KEY must be set}" "${DB_PASSWORD:?DB_PASSWORD must be set}"
 
 COMPOSE_FILE="infra/docker-compose.${ENV_NAME}.yml"
 PROJECT="shelf-${ENV_NAME}"

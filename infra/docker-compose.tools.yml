@@ -5,7 +5,7 @@ name: shelf-tools
 services:
   jenkins:
     build: ./jenkins
-    container_name: jenkins
+    container_name: shelf-jenkins
     # Root is needed to use the host Docker socket from inside the container (Docker Desktop).
     user: root
     restart: unless-stopped

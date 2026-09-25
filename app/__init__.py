@@ -18,7 +18,8 @@ def create_app(env=None):
     app = Flask(__name__)
     app.config.from_object(get_config(env))
 
-    if app.config["APP_ENV"] in ("staging", "production") and app.config["SECRET_KEY"] == DEFAULT_SECRET:
+    deployed = app.config["APP_ENV"] in ("staging", "production")
+    if deployed and app.config["SECRET_KEY"] in (DEFAULT_SECRET, ""):
         raise RuntimeError("SECRET_KEY must be set for staging and production.")
 
     logging.basicConfig(

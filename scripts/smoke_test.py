@@ -97,7 +97,8 @@ def main():
     if args.report:
         with open(args.report, "w") as fh:
             json.dump({"base_url": base, "checks": checks, "passed": not failed}, fh, indent=2)
-    print(f"Smoke test {'PASSED' if not failed else 'FAILED'}: {len(checks) - len(failed)}/{len(checks)} checks")
+    verdict = "PASSED" if not failed else "FAILED"
+    print(f"Smoke test {verdict}: {len(checks) - len(failed)}/{len(checks)} checks")
     sys.exit(1 if failed else 0)
 
 

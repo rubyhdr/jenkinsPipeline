@@ -2,7 +2,7 @@
 // Build → Test → Code Quality → Security → Deploy (staging) → Release (production) → Monitoring
 //
 // Runs on the Jenkins controller defined in infra/ (Docker CLI talks to the host daemon).
-// Tool containers (sonar-scanner, Trivy, Selenium) share this workspace via --volumes-from jenkins.
+// Tool containers (sonar-scanner, Trivy) share this workspace via --volumes-from shelf-jenkins.
 
 pipeline {
   agent any
@@ -150,7 +150,7 @@ EOF
           env.SONAR_TOKEN = sh(script: 'cat /var/sonar/token', returnStdout: true).trim()
         }
         sh '''
-          docker run --rm --user root --network "${DOCKER_NET}" --volumes-from jenkins \
+          docker run --rm --user root --network "${DOCKER_NET}" --volumes-from shelf-jenkins \
             -w "${WORKSPACE}" -e SONAR_HOST_URL -e SONAR_TOKEN \
             sonarsource/sonar-scanner-cli:latest \
             -Dsonar.projectBaseDir="${WORKSPACE}" \
@@ -189,7 +189,7 @@ EOF
         stage('Image: Trivy') {
           steps {
             sh '''
-              TRIVY="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v trivy-cache:/root/.cache/ --volumes-from jenkins -w ${WORKSPACE} aquasec/trivy:latest"
+              TRIVY="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v trivy-cache:/root/.cache/ --volumes-from shelf-jenkins -w ${WORKSPACE} aquasec/trivy:latest"
               # Full inventory for the report, then the gate: HIGH/CRITICAL with a fix available
               $TRIVY image --quiet --format json -o reports/trivy-image.json "${IMAGE}"
               $TRIVY config --quiet --skip-dirs .venv --format json -o reports/trivy-config.json --exit-code 0 .

@@ -10,6 +10,7 @@ set -euo pipefail
 ENV_NAME="${1:?environment required}"
 TARGET="${2:-}"
 REPORT_DIR="${REPORT_DIR:-reports}"
+: "${SECRET_KEY:?SECRET_KEY must be set}" "${DB_PASSWORD:?DB_PASSWORD must be set}"
 
 if [[ -z "$TARGET" && -f "${REPORT_DIR}/${ENV_NAME}-previous-image.txt" ]]; then
   TARGET="$(cat "${REPORT_DIR}/${ENV_NAME}-previous-image.txt")"
