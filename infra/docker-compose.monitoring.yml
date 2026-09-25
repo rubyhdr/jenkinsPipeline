@@ -51,6 +51,8 @@ services:
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
       GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/shelf-overview.json
       GF_USERS_DEFAULT_THEME: light
+      # Use the plugins bundled in the image; do not download or auto-update at runtime (reproducible, offline-safe).
+      GF_PLUGINS_PREINSTALL_DISABLED: "true"
     ports:
       - "3000:3000"
     volumes:
