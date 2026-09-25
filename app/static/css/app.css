@@ -272,8 +272,8 @@ a.list-title:hover { color: var(--accent); }
 .input-error { border-color: var(--danger); }
 
 /* Dashboard */
-.subnav { display: flex; gap: 4px; margin-top: 16px; border-bottom: 1px solid var(--border); overflow-x: auto; }
-.subnav a { padding: 8px 14px; color: var(--muted); text-decoration: none; font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.subnav { display: flex; gap: 4px; margin-top: 16px; border-bottom: 1px solid var(--border); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.subnav a { padding: 8px 14px; color: var(--muted); text-decoration: none; font-weight: 500; border-bottom: 2px solid transparent; white-space: nowrap; }
 .subnav a.active { color: var(--text); border-color: var(--accent); }
 .stats { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 0 0 8px; }
 .stat { padding: 18px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }

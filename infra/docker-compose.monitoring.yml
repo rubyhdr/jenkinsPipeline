@@ -12,7 +12,7 @@ services:
       - --storage.tsdb.retention.time=7d
       - --web.enable-lifecycle
     ports:
-      - "9090:9090"
+      - "9091:9090"
     volumes:
       - prometheus_data:/prometheus
     healthcheck:

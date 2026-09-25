@@ -28,7 +28,7 @@ flowchart LR
   B -- push --> REG[(Registry :5005)]
   D --> STG[Staging :5001]
   R --> PRD[Production :8000]
-  PRD -- /metrics --> PROM[Prometheus :9090] --> AM[Alertmanager :9093] --> HOOK[On-call feed :5055]
+  PRD -- /metrics --> PROM[Prometheus :9091] --> AM[Alertmanager :9093] --> HOOK[On-call feed :5055]
   PROM --> GRAF[Grafana :3000]
 ```
 
@@ -66,7 +66,7 @@ With a token set, the Release stage also pushes the `v<version>` git tag to GitH
 | Jenkins | http://localhost:8080 | admin / admin |
 | SonarQube | http://localhost:9000 | admin / `Shelf-Sonar-Admin-2026!` |
 | Grafana | http://localhost:3000 | anonymous viewer (admin / admin) |
-| Prometheus | http://localhost:9090 | none |
+| Prometheus | http://localhost:9091 | none |
 | Alertmanager | http://localhost:9093 | none |
 | On-call feed (webhook receiver) | http://localhost:5055 | none |
 | Docker registry | http://localhost:5005/v2/_catalog | none |
