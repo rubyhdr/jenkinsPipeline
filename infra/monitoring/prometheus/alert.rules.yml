@@ -1,0 +1,85 @@
+groups:
+  - name: shelf-availability
+    rules:
+      - alert: ShelfProductionDown
+        expr: up{job="shelf-production"} == 0
+        for: 20s
+        labels:
+          severity: critical
+          team: library-platform
+        annotations:
+          summary: "Shelf production is down"
+          description: "Prometheus cannot scrape library-production:8000 for more than 20 seconds."
+          runbook: "docker logs library-production; scripts/rollback.sh production"
+
+      - alert: ShelfDatabaseUnavailable
+        expr: library_books{job="shelf-production"} < 0
+        for: 30s
+        labels:
+          severity: critical
+          team: library-platform
+        annotations:
+          summary: "Shelf production cannot reach its database"
+          description: "Business metrics report -1, meaning database queries are failing."
+
+  - name: shelf-performance
+    rules:
+      - alert: ShelfHighErrorRate
+        expr: |
+          (
+            sum(rate(flask_http_request_total{job="shelf-production", status=~"5.."}[1m]))
+            /
+            clamp_min(sum(rate(flask_http_request_total{job="shelf-production"}[1m])), 0.001)
+          ) > 0.05
+        for: 30s
+        labels:
+          severity: warning
+          team: library-platform
+        annotations:
+          summary: "More than 5% of production requests are failing"
+          description: "5xx error ratio is {{ $value | humanizePercentage }} over the last minute."
+
+      - alert: ShelfHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(flask_http_request_duration_seconds_bucket{job="shelf-production"}[2m]))
+          ) > 0.5
+        for: 1m
+        labels:
+          severity: warning
+          team: library-platform
+        annotations:
+          summary: "Production p95 latency above 500ms"
+          description: "95th percentile response time is {{ $value | humanizeDuration }}."
+
+      - alert: ShelfHighMemory
+        expr: process_resident_memory_bytes{job="shelf-production"} > 400 * 1024 * 1024
+        for: 2m
+        labels:
+          severity: warning
+          team: library-platform
+        annotations:
+          summary: "Production app memory above 400MB (limit 512MB)"
+
+  - name: shelf-business
+    rules:
+      - alert: ShelfManyOverdueLoans
+        expr: library_overdue_loans{job="shelf-production"} > 10
+        for: 5m
+        labels:
+          severity: info
+          team: library-desk
+        annotations:
+          summary: "{{ $value }} loans are overdue"
+          description: "Librarians may want to send reminders."
+
+  - name: ci
+    rules:
+      - alert: JenkinsLastBuildFailed
+        expr: default_jenkins_builds_last_build_result_ordinal{jenkins_job="shelf-pipeline"} > 0
+        for: 10s
+        labels:
+          severity: warning
+          team: library-platform
+        annotations:
+          summary: "The latest Shelf pipeline build did not succeed"

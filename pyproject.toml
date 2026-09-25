@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shelf-library"
+dynamic = ["version"]
+description = "Shelf: a small library management system used to demonstrate a Jenkins DevOps pipeline"
+readme = "README.md"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["app", "app.api", "app.web", "app.services"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+app = ["templates/*.html", "templates/admin/*.html", "static/css/*", "static/js/*", "static/*.svg"]
+
+[tool.setuptools.dynamic]
+version = { file = "VERSION" }

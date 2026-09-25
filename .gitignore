@@ -1,0 +1,15 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.db
+instance/
+.pytest_cache/
+.coverage
+coverage.xml
+reports/
+dist/
+build/
+*.egg-info/
+.scannerwork/
+.env

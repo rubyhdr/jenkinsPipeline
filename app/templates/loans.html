@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "_macros.html" import due %}
+{% block title %}My loans{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>My loans</h1>
+  <p class="muted">{{ active|length }} of {{ config.MAX_ACTIVE_LOANS }} books on loan</p>
+</header>
+
+<section class="section">
+  <h2>On loan</h2>
+  {% if active %}
+    <ul class="list">
+      {% for loan in active %}
+        <li class="list-row" data-testid="active-loan">
+          <div>
+            <a class="list-title" href="{{ url_for('main.book_detail', book_id=loan.book.id) }}">{{ loan.book.title }}</a>
+            <p class="muted">{{ loan.book.author }}</p>
+          </div>
+          <div class="list-actions">
+            {{ due(loan) }}
+            <form method="post" action="{{ url_for('main.renew', loan_id=loan.id) }}">
+              {{ form.csrf_token }}
+              <button class="btn btn-ghost btn-sm" type="submit" {{ 'disabled' if loan.renewals >= config.MAX_RENEWALS }}>Renew</button>
+            </form>
+            <form method="post" action="{{ url_for('main.return_loan', loan_id=loan.id) }}">
+              {{ form.csrf_token }}
+              <button class="btn btn-sm" type="submit" data-testid="return-loan">Return</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty"><p class="empty-title">Nothing on loan.</p><p class="muted"><a href="{{ url_for('main.index') }}">Browse the catalogue</a> to find something new.</p></div>
+  {% endif %}
+</section>
+
+{% if reservations %}
+<section class="section">
+  <h2>Reservations</h2>
+  <ul class="list">
+    {% for r in reservations %}
+      <li class="list-row">
+        <div>
+          <a class="list-title" href="{{ url_for('main.book_detail', book_id=r.book.id) }}">{{ r.book.title }}</a>
+          <p class="muted">Reserved {{ r.created_at.strftime('%d %b %Y') }}</p>
+        </div>
+        <div class="list-actions">
+          {% if r.status == 'ready' %}
+            <span class="pill pill-ok">Ready to borrow</span>
+          {% else %}
+            <span class="pill pill-warn">#{{ r.queue_position() }} in queue</span>
+          {% endif %}
+          <form method="post" action="{{ url_for('main.cancel_reservation', reservation_id=r.id) }}" data-confirm="Cancel this reservation?">
+            {{ form.csrf_token }}
+            <button class="btn btn-ghost btn-sm" type="submit">Cancel</button>
+          </form>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if history %}
+<section class="section">
+  <h2>History</h2>
+  <ul class="list">
+    {% for loan in history %}
+      <li class="list-row">
+        <div>
+          <span class="list-title">{{ loan.book.title }}</span>
+          <p class="muted">{{ loan.borrowed_at.strftime('%d %b') }} – {{ loan.returned_at.strftime('%d %b %Y') }}</p>
+        </div>
+        <div class="list-actions">
+          {% if loan.fee and loan.fee > 0 %}<span class="pill pill-danger">Late fee ${{ '%.2f'|format(loan.fee) }}</span>{% endif %}
+          {{ due(loan) }}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,5 @@
+# Shell scripts and config run inside Linux containers: keep LF line endings on Windows checkouts.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary

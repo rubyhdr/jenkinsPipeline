@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% from "_macros.html" import due %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Library overview</h1>
+  {% include "admin/_nav.html" %}
+</header>
+
+<dl class="stats">
+  <div class="stat"><dt>Titles</dt><dd>{{ stats.books }}</dd><span class="muted">{{ stats.copies }} copies</span></div>
+  <div class="stat"><dt>Members</dt><dd>{{ stats.members }}</dd></div>
+  <div class="stat"><dt>On loan</dt><dd data-testid="stat-active">{{ stats.active_loans }}</dd></div>
+  <div class="stat {{ 'stat-alert' if stats.overdue_loans }}"><dt>Overdue</dt><dd>{{ stats.overdue_loans }}</dd></div>
+  <div class="stat"><dt>In queue</dt><dd>{{ stats.waiting_reservations }}</dd></div>
+  <div class="stat"><dt>Late fees</dt><dd>${{ '%.2f'|format(stats.fees_collected) }}</dd></div>
+</dl>
+
+<div class="split">
+  <section class="section">
+    <h2>Overdue</h2>
+    {% if overdue %}
+      <ul class="list">
+        {% for loan in overdue %}
+          <li class="list-row">
+            <div>
+              <span class="list-title">{{ loan.book.title }}</span>
+              <p class="muted">{{ loan.user.name }} · {{ loan.user.email }}</p>
+            </div>
+            <div class="list-actions">
+              {{ due(loan) }}
+              <form method="post" action="{{ url_for('main.return_loan', loan_id=loan.id) }}">
+                {{ form.csrf_token }}
+                <input type="hidden" name="next" value="{{ url_for('admin.dashboard') }}">
+                <button class="btn btn-sm" type="submit">Check in</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty"><p class="empty-title">Nothing overdue.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <h2>Most borrowed</h2>
+    {% if stats.popular %}
+      {% set top = stats.popular[0][1] %}
+      <ol class="bars">
+        {% for book, count in stats.popular %}
+          <li>
+            <span class="bars-label">{{ book.title }}</span>
+            <meter class="bars-meter" min="0" max="{{ top }}" value="{{ count }}">{{ count }}</meter>
+            <span class="bars-value">{{ count }}</span>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <div class="empty"><p class="empty-title">No loans yet.</p></div>
+    {% endif %}
+  </section>
+</div>
+
+<section class="section">
+  <h2>Recent activity</h2>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Book</th><th>Member</th><th>Borrowed</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for loan in stats.recent_loans %}
+          <tr>
+            <td>{{ loan.book.title }}</td>
+            <td>{{ loan.user.name }}</td>
+            <td>{{ loan.borrowed_at.strftime('%d %b %Y') }}</td>
+            <td>{{ due(loan) }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

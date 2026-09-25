@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Status{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>System status</h1>
+  <p class="muted">The build currently serving this page.</p>
+</header>
+<dl class="stats">
+  <div class="stat"><dt>Version</dt><dd data-testid="status-version">{{ app_version }}</dd></div>
+  <div class="stat"><dt>Environment</dt><dd>{{ app_env }}</dd></div>
+  <div class="stat"><dt>Commit</dt><dd class="mono">{{ git_commit[:12] }}</dd></div>
+</dl>
+<p class="muted">Machine-readable endpoints: <a href="{{ url_for('health') }}">/health</a> · <a href="/metrics">/metrics</a> · <a href="{{ url_for('api_status') }}">/api/status</a></p>
+{% endblock %}

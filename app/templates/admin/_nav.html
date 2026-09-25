@@ -1,0 +1,5 @@
+<nav class="subnav" aria-label="Librarian">
+  <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' }}">Overview</a>
+  <a href="{{ url_for('admin.books') }}" class="{{ 'active' if request.endpoint in ('admin.books', 'admin.new_book', 'admin.edit_book') }}">Books</a>
+  <a href="{{ url_for('admin.members') }}" class="{{ 'active' if request.endpoint == 'admin.members' }}">Members</a>
+</nav>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Shelf{% endblock %} · Shelf Library</title>
+  <meta name="description" content="Shelf: borrow, reserve and discover books at your library.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="{{ url_for('main.index') }}" aria-label="Shelf home">
+        <span class="brand-mark" aria-hidden="true"></span>Shelf
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="{{ url_for('main.index') }}" class="{{ 'active' if request.endpoint == 'main.index' }}">Browse</a>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('main.my_loans') }}" class="{{ 'active' if request.endpoint == 'main.my_loans' }}" data-testid="nav-loans">My loans</a>
+          {% if current_user.is_librarian %}
+            <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.blueprint == 'admin' }}">Dashboard</a>
+          {% endif %}
+        {% endif %}
+      </nav>
+      <div class="account">
+        {% if current_user.is_authenticated %}
+          <span class="avatar" title="{{ current_user.email }}">{{ current_user.name[:1] }}</span>
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-ghost btn-sm" type="submit" data-testid="logout">Sign out</button>
+          </form>
+        {% else %}
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('auth.login') }}">Sign in</a>
+          <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">Join</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main class="container main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes" role="status">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}" data-testid="flash">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>Shelf Library · Built for SIT753</span>
+      <a class="badge badge-env badge-{{ app_env }}" href="{{ url_for('main.status') }}" data-testid="version-badge">
+        v{{ app_version }} · {{ app_env }}
+      </a>
+    </div>
+  </footer>
+</body>
+</html>

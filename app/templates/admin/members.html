@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Members{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Members</h1>
+  {% include "admin/_nav.html" %}
+</header>
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>On loan</th><th>Joined</th></tr></thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td><span class="tag">{{ user.role }}</span></td>
+          <td>{{ user.loans.filter(Loan.returned_at.is_(none)).count() }}</td>
+          <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

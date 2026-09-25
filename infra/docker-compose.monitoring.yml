@@ -1,0 +1,71 @@
+# Monitoring & alerting: Prometheus, Alertmanager, Grafana and a webhook receiver (on-call feed).
+# Started/updated by the Jenkins "Monitoring" stage.
+name: shelf-monitoring
+
+services:
+  prometheus:
+    build: ./monitoring/prometheus
+    container_name: prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+      - --web.enable-lifecycle
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/ready"]
+      interval: 5s
+      retries: 20
+    networks: [devops-net]
+
+  alertmanager:
+    build: ./monitoring/alertmanager
+    container_name: alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9093/-/ready"]
+      interval: 5s
+      retries: 20
+    networks: [devops-net]
+
+  alert-receiver:
+    build: ./monitoring/alert-receiver
+    container_name: alert-receiver
+    restart: unless-stopped
+    ports:
+      - "5055:5055"
+    networks: [devops-net]
+
+  grafana:
+    build: ./monitoring/grafana
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/shelf-overview.json
+      GF_USERS_DEFAULT_THEME: light
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 5s
+      retries: 30
+    depends_on: [prometheus]
+    networks: [devops-net]
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  devops-net:
+    external: true

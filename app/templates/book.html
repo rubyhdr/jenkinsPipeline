@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_macros.html" import cover, availability, due %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('main.index') }}">← All books</a>
+<article class="book-detail">
+  {{ cover(book, "cover-lg") }}
+  <div class="book-info">
+    <p class="eyebrow">{{ book.genre }}{% if book.year %} · {{ book.year }}{% endif %}</p>
+    <h1 data-testid="book-title">{{ book.title }}</h1>
+    <p class="lead">by {{ book.author }}</p>
+    <p>{{ book.description }}</p>
+
+    <div class="panel">
+      <div class="panel-row">
+        <div>
+          <p class="panel-label">Availability</p>
+          <p>{{ availability(book) }} <span class="muted">of {{ book.copies_total }} {{ 'copy' if book.copies_total == 1 else 'copies' }}</span></p>
+        </div>
+        <div class="actions">
+          {% if not current_user.is_authenticated %}
+            <a class="btn btn-primary" href="{{ url_for('auth.login', next=request.path) }}">Sign in to borrow</a>
+          {% elif my_loan %}
+            <div class="stack-sm">{{ due(my_loan) }}</div>
+            <form method="post" action="{{ url_for('main.return_loan', loan_id=my_loan.id) }}">
+              {{ form.csrf_token }}
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <button class="btn" type="submit" data-testid="return">Return</button>
+            </form>
+          {% elif my_reservation and my_reservation.status == 'ready' %}
+            <span class="pill pill-ok">Held for you</span>
+            <form method="post" action="{{ url_for('main.borrow', book_id=book.id) }}">
+              {{ form.csrf_token }}
+              <button class="btn btn-primary" type="submit" data-testid="borrow">Borrow now</button>
+            </form>
+          {% elif my_reservation %}
+            <span class="pill pill-warn">You're #{{ my_reservation.queue_position() }} in the queue</span>
+          {% elif book.available_copies > 0 %}
+            <form method="post" action="{{ url_for('main.borrow', book_id=book.id) }}">
+              {{ form.csrf_token }}
+              <button class="btn btn-primary" type="submit" data-testid="borrow">Borrow</button>
+            </form>
+          {% else %}
+            <form method="post" action="{{ url_for('main.reserve', book_id=book.id) }}">
+              {{ form.csrf_token }}
+              <button class="btn btn-primary" type="submit" data-testid="reserve">Reserve</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <dl class="details">
+      <div><dt>ISBN</dt><dd>{{ book.isbn }}</dd></div>
+      <div><dt>Loan period</dt><dd>{{ config.LOAN_PERIOD_DAYS }} days</dd></div>
+      <div><dt>Late fee</dt><dd>${{ '%.2f'|format(config.LATE_FEE_PER_DAY) }} / day</dd></div>
+    </dl>
+  </div>
+</article>
+{% endblock %}

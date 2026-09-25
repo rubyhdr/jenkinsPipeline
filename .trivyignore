@@ -1,0 +1,4 @@
+# Accepted image vulnerabilities. Each entry must be justified in docs/SECURITY_FINDINGS.md
+# and reviewed when the base image is updated.
+#
+# Format: one CVE ID per line, with a comment explaining why it is accepted.

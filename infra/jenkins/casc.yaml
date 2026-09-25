@@ -1,0 +1,74 @@
+# Jenkins Configuration-as-Code: admin user, credentials and the pipeline job are all created on startup.
+jenkins:
+  systemMessage: "Shelf DevOps pipeline: configured as code (infra/jenkins/casc.yaml)"
+  numExecutors: 2
+  mode: NORMAL
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_ID:-admin}"
+          password: "${JENKINS_ADMIN_PASSWORD:-admin}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - string:
+              scope: GLOBAL
+              id: shelf-staging-secret-key
+              description: Flask SECRET_KEY for staging
+              secret: "${STAGING_SECRET_KEY:-staging-secret-change-me}"
+          - string:
+              scope: GLOBAL
+              id: shelf-prod-secret-key
+              description: Flask SECRET_KEY for production
+              secret: "${PROD_SECRET_KEY:-production-secret-change-me}"
+          - string:
+              scope: GLOBAL
+              id: shelf-db-password
+              description: Postgres password used by staging and production
+              secret: "${SHELF_DB_PASSWORD:-shelf-db-password}"
+          - string:
+              scope: GLOBAL
+              id: grafana-admin-password
+              description: Grafana admin password (used to post deployment annotations)
+              secret: "${GRAFANA_ADMIN_PASSWORD:-admin}"
+          - usernamePassword:
+              scope: GLOBAL
+              id: github-push
+              description: Optional GitHub user + token for pushing release tags
+              username: "${GITHUB_USER:-}"
+              password: "${GITHUB_TOKEN:-}"
+
+jobs:
+  - script: >
+      pipelineJob('shelf-pipeline') {
+        displayName('Shelf: Build, Test, Quality, Security, Deploy, Release, Monitor')
+        description('CI/CD pipeline for the Shelf library system. Defined in the repository Jenkinsfile.')
+        logRotator { numToKeep(30) }
+        properties { disableConcurrentBuilds() }
+        triggers { pollSCM { scmpoll_spec('H/2 * * * *') } }
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('${PIPELINE_REPO_URL:-file:///workspace-src}')
+                  credentials('${PIPELINE_REPO_CREDENTIALS:-}')
+                }
+                branch('${PIPELINE_BRANCH:-*/main}')
+              }
+            }
+            scriptPath('Jenkinsfile')
+            lightweight(false)
+          }
+        }
+      }

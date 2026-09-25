@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<div class="auth">
+  <h1>Welcome back</h1>
+  <p class="muted">Sign in to borrow and reserve books.</p>
+  <form method="post" class="card form" novalidate>
+    {{ form.csrf_token }}
+    {{ field(form.email, type="email", autocomplete="email", placeholder="you@example.com") }}
+    {{ field(form.password, autocomplete="current-password") }}
+    <button class="btn btn-primary btn-block" type="submit" data-testid="login-submit">Sign in</button>
+  </form>
+  <p class="muted center">New here? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+</div>
+{% endblock %}

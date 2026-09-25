@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ 'Edit book' if book else 'Add book' }}{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.books') }}">← Books</a>
+<header class="page-head">
+  <h1>{{ 'Edit “' ~ book.title ~ '”' if book else 'Add a book' }}</h1>
+</header>
+<form method="post" class="card form form-wide" novalidate>
+  {{ form.csrf_token }}
+  <div class="form-grid">
+    {{ field(form.title) }}
+    {{ field(form.author) }}
+    {{ field(form.isbn, placeholder="978-…") }}
+    {{ field(form.genre) }}
+    {{ field(form.year, type="number") }}
+    {{ field(form.copies_total, type="number") }}
+  </div>
+  {{ field(form.description) }}
+  <div class="form-actions">
+    <a class="btn btn-ghost" href="{{ url_for('admin.books') }}">Cancel</a>
+    <button class="btn btn-primary" type="submit">{{ 'Save changes' if book else 'Add book' }}</button>
+  </div>
+</form>
+{% endblock %}

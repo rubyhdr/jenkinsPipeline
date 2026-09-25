@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Join{% endblock %}
+{% block content %}
+<div class="auth">
+  <h1>Join the library</h1>
+  <p class="muted">Free membership. Borrow up to {{ config.MAX_ACTIVE_LOANS }} books at a time.</p>
+  <form method="post" class="card form" novalidate>
+    {{ form.csrf_token }}
+    {{ field(form.name, autocomplete="name") }}
+    {{ field(form.email, type="email", autocomplete="email", placeholder="you@example.com") }}
+    {{ field(form.password, autocomplete="new-password", placeholder="At least 8 characters, letters and numbers") }}
+    {{ field(form.confirm, autocomplete="new-password") }}
+    <button class="btn btn-primary btn-block" type="submit" data-testid="register-submit">Create account</button>
+  </form>
+  <p class="muted center">Already a member? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+</div>
+{% endblock %}

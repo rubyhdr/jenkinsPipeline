@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import availability %}
+{% block title %}Manage books{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Books</h1>
+  {% include "admin/_nav.html" %}
+</header>
+
+<div class="toolbar">
+  <form method="get" class="toolbar-search">
+    <input class="input" type="search" name="q" value="{{ q }}" placeholder="Filter books" aria-label="Filter books">
+  </form>
+  <a class="btn btn-primary" href="{{ url_for('admin.new_book') }}">Add book</a>
+</div>
+
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Title</th><th>Author</th><th>ISBN</th><th>Copies</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for book in books %}
+        <tr>
+          <td><a href="{{ url_for('main.book_detail', book_id=book.id) }}">{{ book.title }}</a></td>
+          <td>{{ book.author }}</td>
+          <td class="mono">{{ book.isbn }}</td>
+          <td>{{ book.copies_total }}</td>
+          <td>{{ availability(book) }}</td>
+          <td class="row-actions">
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.edit_book', book_id=book.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('admin.delete_book', book_id=book.id) }}" data-confirm="Delete “{{ book.title }}”? This cannot be undone.">
+              {{ form.csrf_token }}
+              <button class="btn btn-ghost btn-sm btn-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

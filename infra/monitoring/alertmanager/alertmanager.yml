@@ -1,0 +1,29 @@
+route:
+  receiver: team-webhook
+  group_by: [alertname, env]
+  group_wait: 5s
+  group_interval: 30s
+  repeat_interval: 1h
+  routes:
+    - matchers: [severity="critical"]
+      receiver: team-webhook
+      group_wait: 0s
+      repeat_interval: 15m
+
+receivers:
+  - name: team-webhook
+    webhook_configs:
+      # Local receiver that logs every notification (see infra/monitoring/alert-receiver).
+      - url: http://alert-receiver:5055/alerts
+        send_resolved: true
+    # To also notify Slack, add an incoming-webhook URL:
+    # slack_configs:
+    #   - api_url: https://hooks.slack.com/services/XXX/YYY/ZZZ
+    #     channel: "#library-alerts"
+    #     send_resolved: true
+
+inhibit_rules:
+  # When production is down, don't also page for its error rate or latency.
+  - source_matchers: [alertname="ShelfProductionDown"]
+    target_matchers: [severity="warning"]
+    equal: [project]

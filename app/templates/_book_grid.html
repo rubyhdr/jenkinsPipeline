@@ -1,0 +1,26 @@
+{% from "_macros.html" import cover, availability %}
+<p class="result-count">{{ books|length }} {{ 'book' if books|length == 1 else 'books' }}</p>
+{% if books %}
+  <ul class="grid">
+    {% for book in books %}
+      <li>
+        <a class="card book-card" href="{{ url_for('main.book_detail', book_id=book.id) }}" data-testid="book-card">
+          {{ cover(book) }}
+          <div class="book-card-body">
+            <h3 class="book-card-title">{{ book.title }}</h3>
+            <p class="muted">{{ book.author }}</p>
+            <div class="book-card-meta">
+              <span class="tag">{{ book.genre }}</span>
+              {{ availability(book) }}
+            </div>
+          </div>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <div class="empty">
+    <p class="empty-title">No books match that search.</p>
+    <p class="muted">Try a different title, author or genre.</p>
+  </div>
+{% endif %}
