@@ -31,6 +31,11 @@ def test_register_validation(app, name, email, password, message):
         accounts.register(name, email, password)
 
 
+@pytest.mark.parametrize("email", ["a@b", "@b.co", "a@@b.co", "a b@c.co", "a@b..co", "a@.co"])
+def test_email_validation_rejects_malformed(email):
+    assert not accounts.is_valid_email(email)
+
+
 def test_register_rejects_unknown_role_and_duplicates(app):
     with pytest.raises(LibraryError, match="role"):
         accounts.register("Ada", "a@b.co", "password1", role="admin")

@@ -45,11 +45,11 @@
   <main class="container main">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="flashes" role="status">
+        <output class="flashes">
           {% for category, message in messages %}
             <div class="flash flash-{{ category }}" data-testid="flash">{{ message }}</div>
           {% endfor %}
-        </div>
+        </output>
       {% endif %}
     {% endwith %}
     {% block content %}{% endblock %}

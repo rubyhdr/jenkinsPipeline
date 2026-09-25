@@ -27,15 +27,17 @@ def test_cannot_borrow_same_book_twice(member, make_book, policy):
 def test_loan_limit_enforced(member, make_book, policy):
     for i in range(policy.max_active_loans):
         circulation.borrow(member, make_book(title=f"B{i}"), policy)
+    extra = make_book(title="One too many")
     with pytest.raises(ConflictError, match="maximum"):
-        circulation.borrow(member, make_book(title="One too many"), policy)
+        circulation.borrow(member, extra, policy)
 
 
 def test_overdue_loan_blocks_new_borrowing(member, make_book, policy):
     past = utcnow() - timedelta(days=30)
     circulation.borrow(member, make_book(), policy, now=past)
+    other = make_book(title="Other")
     with pytest.raises(ConflictError, match="overdue"):
-        circulation.borrow(member, make_book(title="Other"), policy)
+        circulation.borrow(member, other, policy)
 
 
 def test_cannot_borrow_when_no_copies(member, make_user, make_book, policy):
@@ -97,8 +99,9 @@ def test_renew_returned_loan_rejected(member, make_book, policy):
 
 
 def test_reserve_only_when_unavailable(member, make_book):
+    book = make_book(copies=1)
     with pytest.raises(ConflictError, match="borrow this book now"):
-        circulation.reserve(member, make_book(copies=1))
+        circulation.reserve(member, book)
 
 
 def test_reservation_queue_and_hold_on_return(member, make_user, make_book, policy):

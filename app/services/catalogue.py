@@ -35,34 +35,53 @@ def genres():
     return [g for (g,) in db.session.query(Book.genre).distinct().order_by(Book.genre)]
 
 
+def _to_int(value, message):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        raise LibraryError(message) from None
+
+
+def _clean_isbn(value):
+    if not rules.is_valid_isbn(value):
+        raise LibraryError("ISBN is not valid.")
+    return rules.normalise_isbn(value)
+
+
+def _clean_copies(value):
+    copies = _to_int(value, "Copies must be a whole number.")
+    if not 0 <= copies <= 100:
+        raise LibraryError("Copies must be between 0 and 100.")
+    return copies
+
+
+def _clean_required(field):
+    def clean(value):
+        if not value:
+            raise LibraryError(f"{field.capitalize()} is required.")
+        return value
+    return clean
+
+
+CLEANERS = {
+    "isbn": _clean_isbn,
+    "title": _clean_required("title"),
+    "author": _clean_required("author"),
+    "copies_total": _clean_copies,
+    "year": lambda value: _to_int(value, "Year must be a number."),
+}
+
+
 def _clean(data: dict) -> dict:
+    """Trim, validate and convert the editable fields present in `data`."""
     cleaned = {}
     for field in EDITABLE_FIELDS:
-        if field in data and data[field] is not None:
-            value = data[field]
-            cleaned[field] = value.strip() if isinstance(value, str) else value
-
-    if "isbn" in cleaned:
-        if not rules.is_valid_isbn(cleaned["isbn"]):
-            raise LibraryError("ISBN is not valid.")
-        cleaned["isbn"] = rules.normalise_isbn(cleaned["isbn"])
-    for required in ("title", "author"):
-        if required in cleaned and not cleaned[required]:
-            raise LibraryError(f"{required.capitalize()} is required.")
-    if "copies_total" in cleaned:
-        try:
-            cleaned["copies_total"] = int(cleaned["copies_total"])
-        except (TypeError, ValueError):
-            raise LibraryError("Copies must be a whole number.") from None
-        if not 0 <= cleaned["copies_total"] <= 100:
-            raise LibraryError("Copies must be between 0 and 100.")
-    if cleaned.get("year") in ("", None):
-        cleaned.pop("year", None)
-    elif "year" in cleaned:
-        try:
-            cleaned["year"] = int(cleaned["year"])
-        except (TypeError, ValueError):
-            raise LibraryError("Year must be a number.") from None
+        value = data.get(field)
+        if isinstance(value, str):
+            value = value.strip()
+        if value is None or (field == "year" and value == ""):
+            continue
+        cleaned[field] = CLEANERS.get(field, lambda v: v)(value)
     return cleaned
 
 

@@ -12,6 +12,7 @@ from .models import User
 
 # Placeholder that create_app refuses to run with outside development (see SECURITY_FINDINGS.md).
 DEFAULT_SECRET = "dev-only-secret-change-me"  # nosec B105
+ERROR_TEMPLATE = "error.html"
 
 
 def create_app(env=None):
@@ -128,25 +129,25 @@ def _register_error_handlers(app):
     def not_found(err):
         if _wants_json():
             return jsonify(error="Not found."), 404
-        return render_template("error.html", code=404, message="We couldn't find that page."), 404
+        return render_template(ERROR_TEMPLATE, code=404, message="We couldn't find that page."), 404
 
     @app.errorhandler(403)
     def forbidden(err):
         if _wants_json():
             return jsonify(error="Forbidden."), 403
-        return render_template("error.html", code=403, message="You don't have access to that."), 403
+        return render_template(ERROR_TEMPLATE, code=403, message="You don't have access to that."), 403
 
     @app.errorhandler(LibraryError)
     def library_error(err):
         if _wants_json():
             return jsonify(error=str(err)), err.status_code
-        return render_template("error.html", code=err.status_code, message=str(err)), err.status_code
+        return render_template(ERROR_TEMPLATE, code=err.status_code, message=str(err)), err.status_code
 
     @app.errorhandler(500)
     def server_error(err):  # pragma: no cover
         if _wants_json():
             return jsonify(error="Internal server error."), 500
-        return render_template("error.html", code=500, message="Something went wrong."), 500
+        return render_template(ERROR_TEMPLATE, code=500, message="Something went wrong."), 500
 
 
 def _register_cli(app):

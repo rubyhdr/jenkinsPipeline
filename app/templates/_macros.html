@@ -1,10 +1,11 @@
 {% macro field(f, type=None, autocomplete=None, placeholder=None) %}
-  <label class="field">
-    <span class="field-label">{{ f.label.text }}</span>
+  <div class="field">
+    {{ f.label(class_="field-label") }}
     {{ f(class_="input" ~ (" input-error" if f.errors else ""), type=type or f.widget.input_type,
-         autocomplete=autocomplete, placeholder=placeholder or "") }}
-    {% for error in f.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
-  </label>
+         autocomplete=autocomplete, placeholder=placeholder or "",
+         **({"aria-invalid": "true", "aria-describedby": f.id ~ "-error"} if f.errors else {})) }}
+    {% if f.errors %}<span class="field-error" id="{{ f.id }}-error">{{ f.errors|join(" ") }}</span>{% endif %}
+  </div>
 {% endmacro %}
 
 {% macro cover(book, size="") %}

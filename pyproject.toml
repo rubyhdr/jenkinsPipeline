@@ -9,12 +9,12 @@ description = "Shelf: a small library management system used to demonstrate a Je
 readme = "README.md"
 requires-python = ">=3.11"
 
-[tool.setuptools]
-packages = ["app", "app.api", "app.web", "app.services"]
-include-package-data = true
+[tool.setuptools.packages.find]
+include = ["app*"]
+namespaces = true
 
 [tool.setuptools.package-data]
-app = ["templates/*.html", "templates/admin/*.html", "static/css/*", "static/js/*", "static/*.svg"]
+"*" = ["*.html", "*.css", "*.js", "*.svg"]
 
 [tool.setuptools.dynamic]
 version = { file = "VERSION" }

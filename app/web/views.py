@@ -23,6 +23,10 @@ main = Blueprint("main", __name__)
 auth = Blueprint("auth", __name__)
 admin = Blueprint("admin", __name__, url_prefix="/admin")
 
+INDEX = "main.index"
+MY_LOANS = "main.my_loans"
+ADMIN_BOOKS = "admin.books"
+
 
 def _policy():
     return LoanPolicy.from_config(current_app.config)
@@ -32,7 +36,7 @@ def _safe_next(target):
     """Only allow redirects to local paths."""
     if target and target.startswith("/") and not target.startswith("//"):
         return target
-    return url_for("main.index")
+    return url_for(INDEX)
 
 
 def librarian_required(fn):
@@ -114,7 +118,7 @@ def borrow(book_id):
         f"You borrowed “{book.title}”. Enjoy!",
         "borrow",
     )
-    return redirect(url_for("main.my_loans") if ok else url_for("main.book_detail", book_id=book_id))
+    return redirect(url_for(MY_LOANS) if ok else url_for("main.book_detail", book_id=book_id))
 
 
 @main.post("/books/<int:book_id>/reserve")
@@ -138,7 +142,7 @@ def return_loan(loan_id):
         f"Returned “{loan.book.title}”.",
         "return",
     )
-    return redirect(_safe_next(request.form.get("next") or url_for("main.my_loans")))
+    return redirect(_safe_next(request.form.get("next") or url_for(MY_LOANS)))
 
 
 @main.post("/loans/<int:loan_id>/renew")
@@ -150,7 +154,7 @@ def renew(loan_id):
         f"Renewed “{loan.book.title}”.",
         "renew",
     )
-    return redirect(url_for("main.my_loans"))
+    return redirect(url_for(MY_LOANS))
 
 
 @main.post("/reservations/<int:reservation_id>/cancel")
@@ -161,7 +165,7 @@ def cancel_reservation(reservation_id):
         lambda: circulation.cancel_reservation(reservation, current_user),
         "Reservation cancelled.",
     )
-    return redirect(url_for("main.my_loans"))
+    return redirect(url_for(MY_LOANS))
 
 
 @main.get("/loans")
@@ -192,7 +196,7 @@ def my_loans():
 @auth.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("main.index"))
+        return redirect(url_for(INDEX))
     form = LoginForm()
     if form.validate_on_submit():
         user = accounts.authenticate(form.email.data, form.password.data)
@@ -209,7 +213,7 @@ def login():
 @auth.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for("main.index"))
+        return redirect(url_for(INDEX))
     form = RegisterForm()
     if form.validate_on_submit():
         try:
@@ -219,7 +223,7 @@ def register():
         else:
             login_user(user)
             flash("Your account is ready. Happy reading!", "success")
-            return redirect(url_for("main.index"))
+            return redirect(url_for(INDEX))
     return render_template("register.html", form=form)
 
 
@@ -230,7 +234,7 @@ def logout():
     if form.validate_on_submit():
         logout_user()
         flash("You have been signed out.", "info")
-    return redirect(url_for("main.index"))
+    return redirect(url_for(INDEX))
 
 
 # --- Librarian ------------------------------------------------------------------------------
@@ -267,7 +271,7 @@ def new_book():
             flash(str(err), "error")
         else:
             flash(f"Added “{book.title}”.", "success")
-            return redirect(url_for("admin.books"))
+            return redirect(url_for(ADMIN_BOOKS))
     return render_template("admin/book_form.html", form=form, book=None)
 
 
@@ -283,7 +287,7 @@ def edit_book(book_id):
             flash(str(err), "error")
         else:
             flash(f"Saved “{book.title}”.", "success")
-            return redirect(url_for("admin.books"))
+            return redirect(url_for(ADMIN_BOOKS))
     return render_template("admin/book_form.html", form=form, book=book)
 
 
@@ -293,7 +297,7 @@ def delete_book(book_id):
     book = circulation.get_book(book_id)
     title = book.title
     _run(lambda: catalogue.delete_book(book), f"Deleted “{title}”.")
-    return redirect(url_for("admin.books"))
+    return redirect(url_for(ADMIN_BOOKS))
 
 
 @admin.get("/members")

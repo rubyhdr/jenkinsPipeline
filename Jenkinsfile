@@ -34,7 +34,7 @@ pipeline {
     IMAGE_REPO      = "${REGISTRY}/shelf"
     DOCKER_NET      = 'devops-net'
     SONAR_HOST_URL  = 'http://sonarqube:9000'
-    PIP_CACHE_DIR   = '/var/jenkins_home/.cache/pip'
+    PIP_CACHE_DIR   = '/var/jenkins_home/.pip-cache'
     VENV            = '.venv/bin'
     REPORT_DIR      = 'reports'
   }
@@ -154,6 +154,7 @@ EOF
             -w "${WORKSPACE}" -e SONAR_HOST_URL -e SONAR_TOKEN \
             sonarsource/sonar-scanner-cli:latest \
             -Dsonar.projectBaseDir="${WORKSPACE}" \
+            -Dsonar.working.directory="${WORKSPACE}/.scannerwork" \
             -Dsonar.projectVersion="${VERSION}" \
             -Dsonar.scm.revision="${GIT_COMMIT}"
           python3 scripts/sonar_quality_gate.py
